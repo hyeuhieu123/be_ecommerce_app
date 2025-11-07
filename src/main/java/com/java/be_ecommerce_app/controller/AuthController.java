@@ -2,6 +2,7 @@ package com.java.be_ecommerce_app.controller;
 
 import com.java.be_ecommerce_app.model.dto.request.auth.LoginDto;
 import com.java.be_ecommerce_app.model.dto.request.auth.RegisterDto;
+import com.java.be_ecommerce_app.model.dto.request.auth.UpdateProfileDto;
 import com.java.be_ecommerce_app.model.dto.response.ApiResponse;
 import com.java.be_ecommerce_app.model.dto.response.JwtResponse;
 import com.java.be_ecommerce_app.model.entity.User;
@@ -10,6 +11,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -35,10 +37,20 @@ public class AuthController {
             return new ResponseEntity<>(new ApiResponse<>(false, "Invalid username or password", null, null), HttpStatus.UNAUTHORIZED);
         }
     }
-//    @GetMapping("/me")
-//    public ResponseEntity<ApiResponse<User>> getCurrentUser(Authentication authentication) {
-//        User user = authService.getCurrentUser(authentication);
-//        return new ResponseEntity<>(new ApiResponse<>(true, "User retrieved successfully", user, null), HttpStatus.OK);
-//
-//    }
+
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<User>> getCurrentUser(Authentication authentication) {
+        User user = authService.getCurrentUser(authentication);
+        return new ResponseEntity<>(new ApiResponse<>(true, "User retrieved successfully", user, null), HttpStatus.OK);
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<ApiResponse<User>> updateProfile(
+            Authentication authentication,
+            @Valid @RequestBody UpdateProfileDto updateProfileDto) {
+        User user = authService.updateProfile(authentication, updateProfileDto);
+        return new ResponseEntity<>(
+                new ApiResponse<>(true, "Profile updated successfully", user, null),
+                HttpStatus.OK);
+    }
 }
