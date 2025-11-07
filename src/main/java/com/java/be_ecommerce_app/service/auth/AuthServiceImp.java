@@ -48,14 +48,12 @@ public class AuthServiceImp implements AuthService {
     @Override
     public JwtResponse login(LoginDto dto) {
         User user = userRepository.findByEmail(dto.getEmail());
-//        if (user == null || !passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
-//            throw new RuntimeException("Invalid username or password");
-        //  }
+        if (user == null || ! (dto.getPassword().equals(user.getPassword())) ) {
+            throw new RuntimeException("Invalid username or password");
+          }
 
         // test nhanh
-        if (user == null ) {
-            throw new RuntimeException("Invalid username or password");
-        }
+
         String token = jwtProvider.generateToken(user.getUsername());
         return JwtResponse.builder()
                 .username(user.getUsername())
