@@ -7,14 +7,12 @@ import com.java.be_ecommerce_app.model.dto.request.auth.UpdateProfileDto;
 import com.java.be_ecommerce_app.model.dto.response.JwtResponse;
 import com.java.be_ecommerce_app.model.entity.User;
 import com.java.be_ecommerce_app.repository.UserRepository;
+import com.java.be_ecommerce_app.service.cart.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-
-import java.time.LocalDateTime;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthServiceImp implements AuthService {
@@ -27,9 +25,13 @@ public class AuthServiceImp implements AuthService {
     @Autowired
     private JwtProvider jwtProvider;
 
+    @Autowired
+    private CartService cartService;
+
 
 
     @Override
+    @Transactional
     public User register(RegisterDto dto) {
         if (userRepository.existsByUsername(dto.getUsername())) {
             throw new RuntimeException("Username already exists");
@@ -43,7 +45,12 @@ public class AuthServiceImp implements AuthService {
                 .email(dto.getEmail())
                 .build();
 
-        return userRepository.save(user); // Placeholder for actual save operation
+        user = userRepository.save(user);
+        
+        // Auto-create Cart for new user
+        cartService.createCartForUser(user.getUserId());
+        
+        return user;
     }
     @Override
     public JwtResponse login(LoginDto dto) {
