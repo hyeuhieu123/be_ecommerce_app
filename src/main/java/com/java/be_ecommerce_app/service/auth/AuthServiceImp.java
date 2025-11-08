@@ -42,6 +42,7 @@ public class AuthServiceImp implements AuthService {
         User user = User.builder()
                 .username(dto.getUsername())
                 .password(dto.getPassword()) // cho nhanh luc test
+                .fullName("")
                 .email(dto.getEmail())
                 .build();
 
@@ -64,6 +65,7 @@ public class AuthServiceImp implements AuthService {
         String token = jwtProvider.generateToken(user.getUsername());
         return JwtResponse.builder()
                 .username(user.getUsername())
+                .fullName(user.getFullName())
                 .email(user.getEmail())
                 .phoneNumber(user.getPhoneNumber())
                 .token(token)
@@ -81,38 +83,12 @@ public class AuthServiceImp implements AuthService {
             throw new RuntimeException("User not found");
         }
 
-        // Update fields
-        if (dto.getFirstName() != null || dto.getLastName() != null) {
-            // Combine firstName and lastName into fullName
-            String fullName = "";
-            if (dto.getFirstName() != null && dto.getLastName() != null) {
-                fullName = dto.getFirstName() + " " + dto.getLastName();
-            } else if (dto.getFirstName() != null) {
-                String currentLastName = "";
-                if (user.getFullName() != null && !user.getFullName().isEmpty()) {
-                    String[] nameParts = user.getFullName().split(" ");
-                    if (nameParts.length > 1) {
-                        currentLastName = nameParts[nameParts.length - 1];
-                    }
-                }
-                fullName = dto.getFirstName() + (currentLastName.isEmpty() ? "" : " " + currentLastName);
-            } else if (dto.getLastName() != null) {
-                String currentFirstName = "";
-                if (user.getFullName() != null && !user.getFullName().isEmpty()) {
-                    String[] nameParts = user.getFullName().split(" ");
-                    if (nameParts.length > 0) {
-                        currentFirstName = nameParts[0];
-                    }
-                }
-                fullName = (currentFirstName.isEmpty() ? "" : currentFirstName + " ") + dto.getLastName();
-            }
-            if (!fullName.isEmpty()) {
-                user.setFullName(fullName.trim());
-            }
-        } else if (dto.getFullName() != null && !dto.getFullName().isEmpty()) {
-            user.setFullName(dto.getFullName());
+        // Update fullName
+        if (dto.getFullName() != null && !dto.getFullName().trim().isEmpty()) {
+            user.setFullName(dto.getFullName().trim());
         }
 
+        // Update email
         if (dto.getEmail() != null && !dto.getEmail().isEmpty()) {
             // Check if email is already taken by another user
             User existingUser = userRepository.findByEmail(dto.getEmail());
@@ -122,10 +98,12 @@ public class AuthServiceImp implements AuthService {
             user.setEmail(dto.getEmail());
         }
 
+        // Update phone number
         if (dto.getPhoneNumber() != null) {
             user.setPhoneNumber(dto.getPhoneNumber());
         }
 
+        // Update address
         if (dto.getAddress() != null) {
             user.setAddress(dto.getAddress());
         }

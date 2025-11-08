@@ -11,8 +11,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateProfileDto {
-    private String firstName;
-    private String lastName;
     private String fullName;
     @Email(message = "Email should be valid")
     private String email;
